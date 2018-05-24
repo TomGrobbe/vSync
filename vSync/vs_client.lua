@@ -91,3 +91,122 @@ RegisterNetEvent('vSync:notify')
 AddEventHandler('vSync:notify', function(message, blink)
     ShowNotification(message, blink)
 end)
+
+--[[ UNIVERSAL MENU HOOKING STUFF ]]--
+local weatherTypes = {
+    'EXTRASUNNY', 
+    'CLEAR', 
+    'NEUTRAL', 
+    'SMOG', 
+    'FOGGY', 
+    'OVERCAST', 
+    'CLOUDS', 
+    'CLEARING', 
+    'RAIN', 
+    'THUNDER', 
+    'SNOW', 
+    'BLIZZARD', 
+    'SNOWLIGHT', 
+    'XMAS', 
+    'HALLOWEEN',
+}
+local itemBlackout, itemFreezeWeather, itemFreezeTime
+
+AddEventHandler('menu:setup', function()
+	TriggerServerEvent('vSync:canAddMenuItems')
+end)
+
+RegisterNetEvent('vSync:canAddMenuItems')
+AddEventHandler('vSync:canAddMenuItems', function()
+	TriggerEvent('menu:registerModuleMenu', 'vSync', function(id)
+		-- Time
+		TriggerEvent('menu:addModuleSubMenu', id, "Time", function(id)
+			-- Change Time
+			TriggerEvent('menu:addModuleSubMenu', id, "Change Time", function(id)
+				TriggerEvent('menu:addModuleItem', id, "Morning", nil, false, function(id) TriggerEvent('vSync:time', {9, 0}) end)
+				TriggerEvent('menu:addModuleItem', id, "Noon", nil, false, function(id) TriggerEvent('vSync:time', {12, 0}) end)
+				TriggerEvent('menu:addModuleItem', id, "Evening", nil, false, function(id) TriggerEvent('vSync:time', {18, 0}) end)
+				TriggerEvent('menu:addModuleItem', id, "Night", nil, false, function(id) TriggerEvent('vSync:time', {23, 0}) end)
+			end, false)
+		
+			-- Freeze Time
+			TriggerEvent('menu:addModuleItem', id, "Freeze Time", false, function(id)
+				itemFreezeTime = id
+			end, function(id)
+				TriggerEvent('vSync:freezeTime')
+			end)
+		end, false)
+		
+		-- Weather
+		TriggerEvent('menu:addModuleSubMenu', id, "Weather", function(id)
+			-- Change Weather
+			TriggerEvent('menu:addModuleSubMenu', id, "Change Weather", function(id)
+				for _, weatherType in ipairs(weatherTypes) do
+					TriggerEvent('menu:addModuleItem', id, weatherType, nil, false, function(id)
+						TriggerEvent('vSync:weather', {weatherType})
+					end)
+				end
+			end, false)
+			
+			-- Dynamic Weather
+			TriggerEvent('menu:addModuleItem', id, "Dynamic Weather", true, function(id)
+				itemFreezeWeather = id
+			end, function(id)
+				TriggerEvent('vSync:freezeWeather')
+			end)
+		end, false)
+		
+		-- Blackout
+		TriggerEvent('menu:addModuleItem', id, "Blackout", false, function(id)
+			itemBlackout = id
+		end, function(id)
+			TriggerEvent('vSync:blackout')
+		end)
+	end, false)
+end)
+
+RegisterNetEvent('vSync:time')
+AddEventHandler('vSync:time', function(args)
+	TriggerServerEvent('vSync:time', args)
+end)
+
+RegisterNetEvent('vSync:freezeTime')
+AddEventHandler('vSync:freezeTime', function()
+	TriggerServerEvent('vSync:freezeTime')
+end)
+
+RegisterNetEvent('vSync:itemFreezeTimeSync')
+AddEventHandler('vSync:itemFreezeTimeSync', function(state)
+	if itemFreezeTime then
+		TriggerEvent('menu:setOnOffState', itemFreezeTime, state)
+	end
+end)
+
+RegisterNetEvent('vSync:weather')
+AddEventHandler('vSync:weather', function(args)
+	TriggerServerEvent('vSync:weather', args)
+end)
+
+RegisterNetEvent('vSync:freezeWeather')
+AddEventHandler('vSync:freezeWeather', function()
+	TriggerServerEvent('vSync:freezeWeather')
+end)
+
+RegisterNetEvent('vSync:itemFreezeWeatherSync')
+AddEventHandler('vSync:itemFreezeWeatherSync', function(state)
+	if itemFreezeWeather then
+		TriggerEvent('menu:setOnOffState', itemFreezeWeather, state)
+	end
+end)
+
+RegisterNetEvent('vSync:blackout')
+AddEventHandler('vSync:blackout', function()
+	TriggerServerEvent('vSync:blackout')
+end)
+
+RegisterNetEvent('vSync:itemBlackoutSync')
+AddEventHandler('vSync:itemBlackoutSync', function(state)
+	if itemBlackout then
+		TriggerEvent('menu:setOnOffState', itemBlackout, state)
+	end
+end)

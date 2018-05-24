@@ -63,6 +63,11 @@ function isAllowedToChange(player)
 end
 
 RegisterCommand('freezetime', function(source, args)
+	TriggerClientEvent('vSync:freezeTime', source)
+end)
+
+RegisterServerEvent('vSync:freezeTime')
+AddEventHandler('vSync:freezeTime', function()
     if source ~= 0 then
         if isAllowedToChange(source) then
             freezeTime = not freezeTime
@@ -71,6 +76,7 @@ RegisterCommand('freezetime', function(source, args)
             else
                 TriggerClientEvent('vSync:notify', source, 'Time is ~y~no longer frozen~s~.')
             end
+			TriggerClientEvent('vSync:itemFreezeTimeSync', -1, freezeTime)
         else
             TriggerClientEvent('chatMessage', source, '', {255,255,255}, '^8Error: ^1You are not allowed to use this command.')
         end
@@ -81,10 +87,16 @@ RegisterCommand('freezetime', function(source, args)
         else
             print("Time is no longer frozen.")
         end
+		TriggerClientEvent('vSync:itemFreezeTimeSync', -1, freezeTime)
     end
 end)
 
-RegisterCommand('freezeweather', function(source, args)
+RegisterCommand('freezeweather', function(source)
+	TriggerClientEvent('vSync:freezeWeather', source)
+end)
+
+RegisterServerEvent('vSync:freezeWeather')
+AddEventHandler('vSync:freezeWeather', function()
     if source ~= 0 then
         if isAllowedToChange(source) then
             DynamicWeather = not DynamicWeather
@@ -93,6 +105,7 @@ RegisterCommand('freezeweather', function(source, args)
             else
                 TriggerClientEvent('vSync:notify', source, 'Dynamic weather changes are now ~b~enabled~s~.')
             end
+			TriggerClientEvent('vSync:itemFreezeWeatherSync', -1, DynamicWeather)
         else
             TriggerClientEvent('chatMessage', source, '', {255,255,255}, '^8Error: ^1You are not allowed to use this command.')
         end
@@ -103,10 +116,16 @@ RegisterCommand('freezeweather', function(source, args)
         else
             print("Weather is no longer frozen.")
         end
+		TriggerClientEvent('vSync:itemFreezeWeatherSync', -1, DynamicWeather)
     end
 end)
 
 RegisterCommand('weather', function(source, args)
+	TriggerClientEvent('vSync:weather', source, args)
+end, false)
+
+RegisterServerEvent('vSync:weather')
+AddEventHandler('vSync:weather', function(args)
     if source == 0 then
         local validWeatherType = false
         if args[1] == nil then
@@ -152,9 +171,14 @@ RegisterCommand('weather', function(source, args)
             print('Access for command /weather denied.')
         end
     end
-end, false)
+end)
 
 RegisterCommand('blackout', function(source)
+    TriggerClientEvent('vSync:blackout', source)
+end)
+
+RegisterServerEvent('vSync:blackout')
+AddEventHandler('vSync:blackout', function()
     if source == 0 then
         blackout = not blackout
         if blackout then
@@ -162,6 +186,7 @@ RegisterCommand('blackout', function(source)
         else
             print("Blackout is now disabled.")
         end
+		TriggerClientEvent('vSync:itemBlackoutSync', -1, blackout)
     else
         if isAllowedToChange(source) then
             blackout = not blackout
@@ -171,6 +196,7 @@ RegisterCommand('blackout', function(source)
                 TriggerClientEvent('vSync:notify', source, 'Blackout is now ~r~disabled~s~.')
             end
             TriggerEvent('vSync:requestSync')
+			TriggerClientEvent('vSync:itemBlackoutSync', -1, blackout)
         end
     end
 end)
@@ -233,6 +259,11 @@ function ShiftToHour(hour)
 end
 
 RegisterCommand('time', function(source, args, rawCommand)
+	TriggerClientEvent('vSync:time', source, args)
+end)
+
+RegisterServerEvent('vSync:time')
+AddEventHandler('vSync:time', function(args)
     if source == 0 then
         if tonumber(args[1]) ~= nil and tonumber(args[2]) ~= nil then
             local argh = tonumber(args[1])
@@ -359,3 +390,9 @@ function NextWeatherStage()
     end
 end
 
+RegisterServerEvent('vSync:canAddMenuItems')
+AddEventHandler('vSync:canAddMenuItems', function()
+	if isAllowedToChange(source) then
+		TriggerClientEvent('vSync:canAddMenuItems', source)
+	end
+end)
